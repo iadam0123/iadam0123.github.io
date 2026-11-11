@@ -72,7 +72,7 @@ The evaluation checks citation presence and expected terms. It is a reproducible
 
 1. Authorize an Azure subscription and budgets, select regions and model deployments, create resource group, managed search, OpenAI, managed PostgreSQL, container registry and Key Vault.
 2. Configure Entra API application roles and client sign-in/consent. Assign app managed identity only needed RBAC roles; restrict network access and enforce TLS.
-3. Apply reviewed DB migrations before setting production `RUN_SCHEMA_CREATE=false`.
+3. Apply reviewed DB migrations with `cd engineering && alembic upgrade head` in an authorized deployment/migration job before setting production `RUN_SCHEMA_CREATE=false`. Never enable automatic schema creation in production.
 4. Build/push image; grant Container Apps pull authorization to ACR; deploy Bicep using GitHub Actions OIDC environment approvals.
 5. Run the integration benchmark and security tests against the **actual** deployed services; configure OpenTelemetry exporters, alarms, request limits, backup and restore.
 6. Have an independent reviewer inspect threat model, tests, cloud deployment and evidence.
