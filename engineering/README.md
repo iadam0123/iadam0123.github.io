@@ -28,9 +28,9 @@ flowchart TD
 - **Real model integration:** Uses Azure OpenAI v1 Responses API with managed identity, and embeddings for vector and lexical hybrid search. Actual generated responses require deployed Azure models.
 - **Agent durability:** PostgreSQL-backed state transitions, separate requester/reviewer, row locking, replay prohibition, audit-event persistence. Tool allowlist is deliberately non-destructive: procurement review does **not** execute a payment.
 - **Governance:** Risk decisions and controls are stored by tenant; the score is an illustrative triage heuristic, **not** an ISO/NIST certification.
-- **Observability:** Prometheus metrics in code and FastAPI OpenTelemetry instrumentation; production dashboards/exporter, alerts, and traces require additional configuration.
+- **Observability:** Prometheus metrics in code and FastAPI OpenTelemetry instrumentation; Azure Monitor OpenTelemetry export is configured automatically when APPLICATIONINSIGHTS_CONNECTION_STRING is supplied; Bicep provisions Application Insights connected to Log Analytics. Production alert rules, trace validation, and dashboard review remain deployment tasks.
 - **CI:** GitHub Actions runs Python tests and container build on changes.
-- **Infrastructure:** Bicep skeleton provisions Container Apps + Log Analytics, referencing Azure resources that must already be established.
+- **Infrastructure:** Bicep skeleton provisions Container Apps + Log Analytics + Application Insights, referencing Azure resources that must already be established.
 
 ## Run tests locally
 ```bash
