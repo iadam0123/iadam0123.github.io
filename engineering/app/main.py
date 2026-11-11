@@ -38,7 +38,11 @@ def ready():
 if os.getenv("ENABLE_METRICS_ENDPOINT")=="true":
     @app.get("/internal/metrics",include_in_schema=False)
     def metrics(): return Response(content=generate_latest(),media_type=CONTENT_TYPE_LATEST)
-FastAPIInstrumentor.instrument_app(app)
+if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+    from azure.monitor.opentelemetry import configure_azure_monitor
+    configure_azure_monitor(connection_string=os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"])
+else:
+    FastAPIInstrumentor.instrument_app(app)
 @app.on_event("startup")
 def initialize():
     # Production schema must be managed by migrations; set RUN_SCHEMA_CREATE=false in production.
