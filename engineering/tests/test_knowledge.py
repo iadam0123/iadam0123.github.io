@@ -11,9 +11,9 @@ def test_knowledge_answer_restricts_citation_to_retrieved_passages(monkeypatch):
     monkeypatch.setenv("AZURE_OPENAI_CHAT_DEPLOYMENT","test-deployment")
     p=knowledge.Principal(subject="alice",tenant="tenant-A",roles=["Knowledge.Reader"])
     answer=knowledge.answer_question("How to deploy AI?",p)
-    assert len(answer.citations)==1
-    assert answer.citations[0].ref=="DOC-1"
-    assert answer.citations[0].source=="synthetic://review"
+    assert answer.grounded is False
+    assert not answer.citations
+    assert "invalid source citation" in answer.answer
 
 def test_empty_retrieval_abstains(monkeypatch):
     monkeypatch.setattr(knowledge,"retrieve",lambda q,p,k:[])
