@@ -1,0 +1,43 @@
+name: Azure Enterprise AI deployment (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Azure Container Registry image reference (image must already exist)'
+        required: true
+        type: string
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: enterprise-ai-azure
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Provision API and logging
+        env:
+          PG_URL: ${{ secrets.AI_DATABASE_URL }}
+          ENTRA_TENANT: ${{ secrets.AZURE_TENANT_ID }}
+          API_AUD: ${{ vars.ENTRA_API_AUDIENCE }}
+          OAI_ENDPOINT: ${{ vars.AZURE_OPENAI_ENDPOINT }}
+          CHAT_MODEL: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT }}
+          EMB_MODEL: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}
+          SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+          PREFIX: ${{ vars.AI_RESOURCE_PREFIX }}
+          RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+          IMAGE: ${{ inputs.image }}
+        run: |
+          az deployment group create --resource-group "$RG" \
+            --template-file engineering/infra/main.bicep \
+            --parameters namePrefix="$PREFIX" containerImage="$IMAGE" \
+              entraTenantId="$ENTRA_TENANT" entraApiAudience="$API_AUD" \
+              azureOpenAiEndpoint="$OAI_ENDPOINT" chatDeployment="$CHAT_MODEL" \
+              embeddingDeployment="$EMB_MODEL" searchEndpoint="$SEARCH_ENDPOINT" \
+              databaseUrl="$PG_URL"
+          echo 'Azure infrastructure request completed. Validate runtime RBAC, image pull authorization, schema migrations and authenticated smoke tests separately.'
