@@ -28,6 +28,8 @@ def view(t:Task):
 def propose(body:Proposal,p:Annotated[Principal,Depends(require_role("Agent.Requester"))],db:Annotated[Session,Depends(db_session)]):
     if body.action=="procurement_review" and body.amount_usd>10000:
         raise HTTPException(422,"Policy limit $10,000 exceeded. No execution authorized.")
+    if body.action=="policy_lookup" and "Knowledge.Reader" not in p.roles:
+        raise HTTPException(403,"Knowledge.Reader role required to create a lookup task")
     if body.action=="policy_lookup" and body.amount_usd:
         raise HTTPException(422,"Policy lookup does not accept spending.")
     if any(x in body.description.lower() for x in ["bypass approval","ignore policy","disable audit"]):
