@@ -29,6 +29,16 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+resource insights 'Microsoft.Insights/components@2020-02-02' = {
+  name: '${namePrefix}-insights'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: workspace.id
+  }
+}
+
 resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: '${namePrefix}-env'
   location: location
@@ -75,6 +85,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
           {name: 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT', value: embeddingDeployment}
           {name: 'AZURE_SEARCH_ENDPOINT', value: searchEndpoint}
           {name: 'ENABLE_METRICS_ENDPOINT', value: 'false'}
+          {name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: insights.properties.ConnectionString}
         ]
         probes: [{
           type: 'Liveness'
