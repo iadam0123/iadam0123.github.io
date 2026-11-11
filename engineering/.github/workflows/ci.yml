@@ -1,0 +1,26 @@
+name: Enterprise AI Engineering CI
+on:
+  push:
+    paths: ['engineering/**', '.github/workflows/enterprise-ai-ci.yml']
+  pull_request:
+    paths: ['engineering/**', '.github/workflows/enterprise-ai-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r engineering/requirements.txt
+      - name: Run reproducible unit and API tests
+        env:
+          PYTHONPATH: engineering
+          RUN_SCHEMA_CREATE: 'false'
+        run: pytest engineering/tests -q -ra
+      - name: Build container
+        run: docker build -t enterprise-ai-architecture:test engineering
