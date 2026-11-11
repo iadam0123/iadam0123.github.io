@@ -68,6 +68,8 @@ def answer_question(question: str, principal: Principal, top_k:int=5) -> Answer:
       input="QUESTION:\n"+question+"\n\nAUTHORIZED CONTEXT:\n"+context, max_output_tokens=700)
     text=response.output_text or ""
     used={int(x.split("-")[1]) for x in CITATION_RE.findall(text)}
+    if any(i<1 or i>len(docs) for i in used):
+        return Answer(answer="The model returned an invalid source citation; the answer was withheld for review.",citations=[],grounded=False,model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"])
     citations=[Citation(ref=f"DOC-{i}",title=docs[i-1]["title"],source=docs[i-1]["source"],passage=docs[i-1]["content"][:650]) for i in sorted(used) if 1<=i<=len(docs)]
     # Citations are constrained to retrieved authorized sources. Automated factuality eval is separate.
     return Answer(answer=text,citations=citations,grounded=bool(citations),model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"])
