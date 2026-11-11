@@ -1,0 +1,32 @@
+name: Enterprise AI Engineering CI
+on:
+  push:
+    paths:
+      - 'engineering/**'
+      - '.github/workflows/enterprise-ai-ci.yml'
+  pull_request:
+    paths:
+      - 'engineering/**'
+      - '.github/workflows/enterprise-ai-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: engineering/requirements.txt
+      - name: Install dependencies
+        run: python -m pip install -r engineering/requirements.txt
+      - name: Run automated test suite
+        env:
+          PYTHONPATH: engineering
+          RUN_SCHEMA_CREATE: 'false'
+        run: python -m pytest engineering/tests -q -ra
+      - name: Build deployable container
+        run: docker build -t enterprise-ai-architecture:ci engineering
