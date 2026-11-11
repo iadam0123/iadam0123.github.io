@@ -4,6 +4,8 @@ WORKDIR /srv
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
+COPY alembic ./alembic
+COPY alembic.ini ./alembic.ini
 RUN useradd --system --uid 10001 appuser
 USER appuser
 EXPOSE 8080
