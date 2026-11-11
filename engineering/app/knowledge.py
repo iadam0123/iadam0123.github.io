@@ -45,6 +45,7 @@ def search_client():
                         credential=credential())
 
 def retrieve(question: str, principal: Principal, top_k: int):
+    if not principal.roles: return []
     deployment=os.environ["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"]
     embedding=llm_client().embeddings.create(model=deployment, input=question).data[0].embedding
     # Security trim happens inside Azure Search before any search results reach the model.
